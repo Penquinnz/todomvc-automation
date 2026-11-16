@@ -12,39 +12,48 @@
 
 ## 1. สิ่งที่ต้องมีในเครื่อง
 
-| โปรแกรม | Version | ตรวจสอบด้วยคำสั่ง |
-|---|---|---|
-| Python | **3.10 ขึ้นไป** (แนะนำ 3.12) | `python --version` (macOS/Linux อาจเป็น `python3 --version`) |
-| Git | version ใดก็ได้ | `git --version` |
+| โปรแกรม | Version |
+|---|---|
+| Python | **3.10 ขึ้นไป** (แนะนำ 3.12) |
+| Git | version ใดก็ได้ |
 
-**เช็ก version ของ Python ก่อน** ถ้าต่ำกว่า 3.10 จะติดตั้ง library ไม่ได้ (pip แจ้งว่าหา `playwright==1.63.0` ไม่เจอ) ให้ติดตั้ง Python 3.12 เพิ่ม โดยไม่ต้องลบตัวเดิม:
+ถ้า Python ต่ำกว่า 3.10 จะติดตั้ง library ไม่ได้ (pip แจ้งว่าหา `playwright==1.63.0` ไม่เจอ) ขั้นตอนในข้อ 2 รวมการเช็กและติดตั้ง Python 3.12 ไว้แล้ว ไม่ต้องลบ Python ตัวเดิม
 
-- **Windows:** `winget install Python.Python.3.12` หรือดาวน์โหลดจาก https://www.python.org/downloads/ แล้วติ๊ก **"Add python.exe to PATH"** ตอนติดตั้ง ถ้าใช้ winget แล้วค้างที่ "Starting package install" ให้ดูที่ taskbar ว่ามีหน้าต่างขออนุญาตรอให้กด Yes อยู่หรือไม่
-- **macOS:** `brew install python@3.12` หรือดาวน์โหลดจาก python.org
+| Library ที่ติดตั้งจาก `requirements.txt` | ใช้ทำอะไร |
+|---|---|
+| `playwright` | ควบคุม browser และรอ element อัตโนมัติ |
+| `pytest` | test runner |
+| `pytest-playwright` | เชื่อม Playwright กับ pytest: fixture `page`, เลือก browser, screenshot และ trace เมื่อ fail |
+| `pytest-html` | สร้างรายงาน HTML |
 
-ติดตั้งเสร็จแล้วให้ปิดและเปิด Terminal ใหม่
+## 2. ติดตั้งและรันครั้งแรก
 
-## 2. ติดตั้ง
+เลือกตามระบบปฏิบัติการ ทำครั้งเดียวต่อเครื่อง
 
-### 2.1 Clone repo
+### 2A. Windows (PowerShell)
 
-```bash
+**ขั้นที่ 1 เช็ก Python**
+
+```powershell
+py -0
+```
+
+คำสั่งนี้แสดง Python ทุก version ในเครื่อง ถ้าในรายการมี 3.10 ขึ้นไป ข้ามไปขั้นที่ 2 ถ้าไม่มี หรือขึ้นว่าไม่รู้จักคำสั่ง `py` ให้ติดตั้ง Python 3.12:
+
+```powershell
+winget install Python.Python.3.12
+```
+
+ถ้าค้างที่ "Starting package install" ให้ดูที่ taskbar ว่ามีหน้าต่างขออนุญาตรอให้กด Yes อยู่หรือไม่ หรือดาวน์โหลดจาก https://www.python.org/downloads/ แล้วติ๊ก **"Add python.exe to PATH"** ตอนติดตั้ง จากนั้นปิดและเปิด Terminal ใหม่
+
+**ขั้นที่ 2 Clone repo**
+
+```powershell
 git clone <URL ของ repo นี้>
 cd todomvc-automation
 ```
 
-### 2.2 สร้าง virtual environment
-
-แยก library ของโปรเจกต์นี้ออกจาก Python หลักของเครื่อง
-
-**macOS / Linux**
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-**Windows (PowerShell)**
+**ขั้นที่ 3 สร้างและ activate virtual environment**
 
 ```powershell
 py -3.12 -m venv .venv
@@ -52,37 +61,93 @@ py -3.12 -m venv .venv
 python --version
 ```
 
-`py -3.12` เลือก Python 3.12 แม้เครื่องจะมีหลาย version บรรทัดสุดท้ายต้องขึ้น `Python 3.12.x`
+บรรทัดสุดท้ายต้องขึ้น `Python 3.12.x` และบรรทัดคำสั่งต้องมี `(.venv)` นำหน้า ถ้าใช้ Python version อื่นที่ 3.10 ขึ้นไป เปลี่ยน `-3.12` เป็น version นั้น
 
-ถ้า PowerShell แจ้งว่ารัน script ไม่ได้ ให้รันคำสั่งนี้ครั้งเดียวแล้ว activate ใหม่:
-`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
+ถ้าขึ้นว่า "running scripts is disabled on this system" ให้รันคำสั่งนี้ครั้งเดียว ตอบ `Y` แล้ว activate ใหม่:
 
-**Windows (Command Prompt)**
-
-```bat
-py -3.12 -m venv .venv
-.venv\Scripts\activate.bat
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 
-เมื่อ activate สำเร็จ จะเห็น `(.venv)` นำหน้าบรรทัดคำสั่ง ทุกครั้งที่เปิด Terminal ใหม่ต้อง activate ใหม่ แต่ไม่ต้องติดตั้งซ้ำ
+ถ้าใช้ Command Prompt แทน PowerShell ให้ activate ด้วย `.venv\Scripts\activate.bat`
 
-### 2.3 ติดตั้ง library และ browser
+**ขั้นที่ 4 ติดตั้ง library และ browser**
+
+```powershell
+pip install -r requirements.txt
+playwright install
+```
+
+`playwright install` ดาวน์โหลด Chromium, Firefox และ WebKit (ประมาณ 500 MB ครั้งแรกครั้งเดียว)
+
+**ขั้นที่ 5 รัน**
+
+```powershell
+python -m pytest --browser chromium --browser firefox --browser webkit
+```
+
+ผลที่ควรได้: `105 passed, 6 xfailed`
+
+### 2B. macOS (Terminal)
+
+**ขั้นที่ 1 เช็ก Python**
+
+```bash
+python3 --version
+```
+
+Mac ส่วนใหญ่มี Python 3.9 มากับ Command Line Tools ของ Apple ซึ่งใช้ไม่ได้ ให้ติดตั้ง Python 3.12 เพิ่ม:
+
+```bash
+brew install python@3.12
+```
+
+ถ้ายังไม่มี Homebrew ดาวน์โหลด Python 3.12 จาก https://www.python.org/downloads/macos/ แทนได้ ทั้งสองทางจะได้คำสั่ง `python3.12` มาใช้
+
+ครั้งแรกที่ใช้ `git` หรือ `brew` บน Mac อาจมีหน้าต่างให้ติดตั้ง Command Line Tools ให้กด Install แล้วรอจนเสร็จ
+
+**ขั้นที่ 2 Clone repo**
+
+```bash
+git clone <URL ของ repo นี้>
+cd todomvc-automation
+```
+
+**ขั้นที่ 3 สร้างและ activate virtual environment**
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python --version
+```
+
+ใช้ `python3.12` ตรงๆ ไม่ใช้ `python3` เพราะ `python3` อาจชี้ไปที่ 3.9 ของ Apple บรรทัดสุดท้ายต้องขึ้น `Python 3.12.x` และบรรทัดคำสั่งต้องมี `(.venv)` นำหน้า
+
+**ขั้นที่ 4 ติดตั้ง library และ browser**
 
 ```bash
 pip install -r requirements.txt
 playwright install
 ```
 
-`playwright install` ดาวน์โหลด Chromium, Firefox และ WebKit ที่ Playwright ใช้ (ประมาณ 500 MB ครั้งแรกครั้งเดียว) ถ้าต้องการแค่ Chromium ใช้ `playwright install chromium`
+**ขั้นที่ 5 รัน**
 
-บน Linux ถ้ามี error เรื่อง library ของระบบ ใช้ `playwright install --with-deps`
+```bash
+python -m pytest --browser chromium --browser firefox --browser webkit
+```
 
-| Library | ใช้ทำอะไร |
-|---|---|
-| `playwright` | ควบคุม browser และรอ element อัตโนมัติ |
-| `pytest` | test runner |
-| `pytest-playwright` | เชื่อม Playwright กับ pytest: fixture `page`, เลือก browser, screenshot และ trace เมื่อ fail |
-| `pytest-html` | สร้างรายงาน HTML |
+ผลที่ควรได้: `105 passed, 6 xfailed` บน Mac ผลของ WebKit ใกล้เคียง Safari จริงมากที่สุด
+
+### 2C. Linux
+
+ทำเหมือน macOS โดยติดตั้ง Python 3.12 จาก package manager ของ distro และใช้ `playwright install --with-deps` ในขั้นที่ 4 เพื่อติดตั้ง library ของระบบที่ browser ต้องใช้
+
+### เปิด Terminal ครั้งต่อไป
+
+ไม่ต้องติดตั้งซ้ำ แค่เข้าโฟลเดอร์แล้ว activate ก่อนรัน:
+
+- Windows: `.venv\Scripts\Activate.ps1`
+- macOS และ Linux: `source .venv/bin/activate`
 
 ## 3. รัน test
 
@@ -188,10 +253,11 @@ todomvc-automation/
 
 | อาการ | วิธีแก้ |
 |---|---|
-| `No matching distribution found for playwright==1.63.0` | Python ต่ำกว่า 3.10 ติดตั้ง Python 3.12 แล้วสร้าง venv ใหม่ ดูข้อ 1 และ 2.2 |
-| `pytest : The term 'pytest' is not recognized` | ยังไม่ได้ activate virtual environment (ดูข้อ 2.2) หรือใช้ `python -m pytest` แทน |
+| `No matching distribution found for playwright==1.63.0` | Python ต่ำกว่า 3.10 ติดตั้ง Python 3.12 แล้วสร้าง venv ใหม่ ดูข้อ 2A หรือ 2B ขั้นที่ 1 และ 3 |
+| `pytest : The term 'pytest' is not recognized` | ยังไม่ได้ activate virtual environment (ดูข้อ 2 ขั้นที่ 3) หรือใช้ `python -m pytest` แทน |
 | `running scripts is disabled on this system` | รัน `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` ครั้งเดียว แล้ว activate ใหม่ |
-| `playwright: command not found` | ยังไม่ได้ activate virtual environment ดูข้อ 2.2 |
+| `playwright: command not found` | ยังไม่ได้ activate virtual environment ดูข้อ 2 ขั้นที่ 3 |
 | `Executable doesn't exist ... ms-playwright` | ยังไม่ได้ติดตั้ง browser รัน `playwright install` |
+| macOS: `python3 -m venv` ได้ Python 3.9 | ใช้ `python3.12 -m venv .venv` แทน ดูข้อ 2B ขั้นที่ 3 |
 | `ModuleNotFoundError: No module named 'pages'` | ต้องรัน `pytest` จากโฟลเดอร์ `todomvc-automation` |
 | test ช้าหรือ timeout ทั้งชุด | ตรวจว่าเปิด https://todomvc.com/examples/react/dist/ ใน browser ได้ |
