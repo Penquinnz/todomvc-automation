@@ -104,6 +104,8 @@ python -m pytest
 | ดูชื่อ test แบบละเอียด | `pytest -v` |
 | รันกับเว็บอื่น เช่น copy ในเครื่อง | `pytest --base-url http://localhost:8080/` |
 
+คำสั่งในตารางข้างบนใช้ `pytest` สั้นๆ ได้เมื่อ activate virtual environment แล้ว ถ้า Terminal หาคำสั่งไม่เจอ ให้ใช้ `python -m pytest` แทน
+
 ## 4. ดูผล
 
 - **รายงาน HTML:** `reports/report.html` เปิดด้วย browser ได้เลย
@@ -183,8 +185,6 @@ todomvc-automation/
 `.github/workflows/tests.yml` รัน test อัตโนมัติทุกครั้งที่ push หรือเปิด pull request บน Chromium, Firefox และ WebKit แบบขนาน รายงานและไฟล์ trace ของ test ที่ fail ดาวน์โหลดได้จากหน้า Actions ของแต่ละรอบ
 
 ## 8. แก้ปัญหาที่พบบ่อย
-
-คำสั่งในตารางข้างบนใช้ `pytest` สั้นๆ ได้เมื่อ activate virtual environment แล้ว ถ้า Terminal หาคำสั่งไม่เจอ ให้ใช้ `python -m pytest` แทน
 
 | อาการ | วิธีแก้ |
 |---|---|
