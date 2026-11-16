@@ -28,7 +28,46 @@
 
 ## 2. ติดตั้งและรันครั้งแรก
 
-เลือกตามระบบปฏิบัติการ ทำครั้งเดียวต่อเครื่อง
+มี 2 วิธี แนะนำวิธีแรก เพราะไม่ต้องสนใจว่าเครื่องมี Python version อะไร
+
+### วิธีที่แนะนำ: uv (ทุกระบบ)
+
+[uv](https://docs.astral.sh/uv/) ดาวน์โหลด Python 3.12 และ library ตาม version ที่ล็อกไว้ใน `uv.lock` ให้เอง แยกจาก Python ที่มีอยู่ในเครื่อง ไม่ต้องสร้างหรือ activate virtual environment เอง
+
+**ขั้นที่ 1 ติดตั้ง uv** (ครั้งเดียวต่อเครื่อง)
+
+Windows (PowerShell):
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+macOS และ Linux:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+หรือบน macOS ใช้ `brew install uv` ติดตั้งเสร็จแล้วปิดและเปิด Terminal ใหม่ แล้วเช็กด้วย `uv --version`
+
+**ขั้นที่ 2 Clone และรัน** (คำสั่งเดียวกันทุกระบบ)
+
+```bash
+git clone <URL ของ repo นี้>
+cd todomvc-automation
+uv run playwright install
+uv run pytest --browser chromium --browser firefox --browser webkit
+```
+
+ครั้งแรก `uv run` จะดาวน์โหลด Python 3.12 และ library ให้ก่อน ใช้เวลาประมาณ 1 นาที ครั้งต่อไปเริ่มทันที `playwright install` ดาวน์โหลด browser 3 ตัว (ประมาณ 500 MB ครั้งแรกครั้งเดียว)
+
+ผลที่ควรได้: `105 passed, 6 xfailed`
+
+ครั้งต่อไปเปิด Terminal แล้วรัน `uv run pytest` ได้เลย ไม่ต้อง activate อะไร
+
+### วิธีสำรอง: pip และ virtual environment
+
+ใช้เมื่อติดตั้ง uv ไม่ได้ เช่น เครือข่ายบริษัทบล็อกการดาวน์โหลด เลือกตามระบบปฏิบัติการ
 
 ### 2A. Windows (PowerShell)
 
@@ -142,7 +181,7 @@ python -m pytest --browser chromium --browser firefox --browser webkit
 
 ทำเหมือน macOS โดยติดตั้ง Python 3.12 จาก package manager ของ distro และใช้ `playwright install --with-deps` ในขั้นที่ 4 เพื่อติดตั้ง library ของระบบที่ browser ต้องใช้
 
-### เปิด Terminal ครั้งต่อไป
+### เปิด Terminal ครั้งต่อไป (วิธีสำรอง)
 
 ไม่ต้องติดตั้งซ้ำ แค่เข้าโฟลเดอร์แล้ว activate ก่อนรัน:
 
@@ -152,10 +191,10 @@ python -m pytest --browser chromium --browser firefox --browser webkit
 ## 3. รัน test
 
 ```bash
-python -m pytest
+uv run pytest
 ```
 
-รันกับเว็บจริงบน Chromium แบบ headless (ไม่เปิดหน้าต่าง) ใช้เวลาประมาณ 40 วินาที
+(วิธีสำรองใช้ `python -m pytest`) รันกับเว็บจริงบน Chromium แบบ headless (ไม่เปิดหน้าต่าง) ใช้เวลาประมาณ 40 วินาที
 
 | ต้องการ | คำสั่ง |
 |---|---|
@@ -169,7 +208,7 @@ python -m pytest
 | ดูชื่อ test แบบละเอียด | `pytest -v` |
 | รันกับเว็บอื่น เช่น copy ในเครื่อง | `pytest --base-url http://localhost:8080/` |
 
-คำสั่งในตารางข้างบนใช้ `pytest` สั้นๆ ได้เมื่อ activate virtual environment แล้ว ถ้า Terminal หาคำสั่งไม่เจอ ให้ใช้ `python -m pytest` แทน
+ถ้าติดตั้งด้วย uv ให้ใส่ `uv run` นำหน้าทุกคำสั่ง เช่น `uv run pytest -m smoke` ถ้าติดตั้งด้วยวิธีสำรอง ใช้ `pytest` สั้นๆ ได้เมื่อ activate virtual environment แล้ว หรือใช้ `python -m pytest` ถ้า Terminal หาคำสั่งไม่เจอ
 
 ## 4. ดูผล
 
@@ -195,7 +234,10 @@ playwright show-trace test-results/<ชื่อ test>/trace.zip
 ```
 todomvc-automation/
 ├── README.md
-├── requirements.txt          # version ตายตัว ทุกเครื่องได้ผลเหมือนกัน
+├── pyproject.toml            # ข้อมูลโปรเจกต์และ library สำหรับ uv
+├── uv.lock                   # ล็อก version ของทุก library ทุกเครื่องได้ชุดเดียวกัน
+├── .python-version           # Python version ที่ uv ใช้ (3.12)
+├── requirements.txt          # library ชุดเดียวกัน สำหรับวิธีสำรองด้วย pip และ CI
 ├── pytest.ini                # base URL, markers, รายงาน, screenshot และ trace เมื่อ fail
 ├── conftest.py               # fixture todo_page: เปิดหน้าเว็บใหม่ให้ทุก test
 ├── pages/
@@ -236,6 +278,8 @@ todomvc-automation/
 - ถ้าแอปแก้แล้ว test จะ fail เตือนให้ลบ `xfail` ออก
 - `raises=AssertionError` ทำให้ error อื่น เช่น เว็บล่มหรือ locator เสีย ไม่ถูกซ่อนเป็น xfail
 
+**ติดตั้งได้ทุกเครื่อง:** uv ล็อกทั้ง Python version และ library ทุกตัว ทุกเครื่องได้สภาพแวดล้อมเดียวกัน โดยไม่ขึ้นกับ Python ที่มีอยู่ในเครื่อง `requirements.txt` เก็บ version เดียวกันไว้สำหรับคนที่ใช้ pip ถ้าเปลี่ยน version ต้องแก้ทั้ง 2 ไฟล์
+
 **Traceability:** ชื่อ test ขึ้นต้นด้วย TC ID ตรงกับ `docs/test-cases.md` และติด marker `smoke`, `P1` ถึง `P3` เพื่อเลือกชุดที่รันได้
 
 ## Known defects
@@ -253,6 +297,7 @@ todomvc-automation/
 
 | อาการ | วิธีแก้ |
 |---|---|
+| `uv : The term 'uv' is not recognized` หรือ `uv: command not found` | ปิดและเปิด Terminal ใหม่หลังติดตั้ง uv ถ้ายังไม่เจอ ใน VS Code ต้องปิดทั้งโปรแกรมแล้วเปิดใหม่ |
 | `No matching distribution found for playwright==1.63.0` | Python ต่ำกว่า 3.10 ติดตั้ง Python 3.12 แล้วสร้าง venv ใหม่ ดูข้อ 2A หรือ 2B ขั้นที่ 1 และ 3 |
 | `pytest : The term 'pytest' is not recognized` | ยังไม่ได้ activate virtual environment (ดูข้อ 2 ขั้นที่ 3) หรือใช้ `python -m pytest` แทน |
 | `running scripts is disabled on this system` | รัน `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` ครั้งเดียว แล้ว activate ใหม่ |
