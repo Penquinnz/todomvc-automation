@@ -14,10 +14,15 @@
 
 | โปรแกรม | Version | ตรวจสอบด้วยคำสั่ง |
 |---|---|---|
-| Python | 3.10 ขึ้นไป | `python --version` (macOS/Linux อาจเป็น `python3 --version`) |
+| Python | **3.10 ขึ้นไป** (แนะนำ 3.12) | `python --version` (macOS/Linux อาจเป็น `python3 --version`) |
 | Git | version ใดก็ได้ | `git --version` |
 
-ถ้ายังไม่มี Python ดาวน์โหลดได้ที่ https://www.python.org/downloads/ บน Windows ตอนติดตั้งให้ติ๊ก **"Add python.exe to PATH"**
+**เช็ก version ของ Python ก่อน** ถ้าต่ำกว่า 3.10 จะติดตั้ง library ไม่ได้ (pip แจ้งว่าหา `playwright==1.63.0` ไม่เจอ) ให้ติดตั้ง Python 3.12 เพิ่ม โดยไม่ต้องลบตัวเดิม:
+
+- **Windows:** `winget install Python.Python.3.12` หรือดาวน์โหลดจาก https://www.python.org/downloads/ แล้วติ๊ก **"Add python.exe to PATH"** ตอนติดตั้ง ถ้าใช้ winget แล้วค้างที่ "Starting package install" ให้ดูที่ taskbar ว่ามีหน้าต่างขออนุญาตรอให้กด Yes อยู่หรือไม่
+- **macOS:** `brew install python@3.12` หรือดาวน์โหลดจาก python.org
+
+ติดตั้งเสร็จแล้วให้ปิดและเปิด Terminal ใหม่
 
 ## 2. ติดตั้ง
 
@@ -42,9 +47,12 @@ source .venv/bin/activate
 **Windows (PowerShell)**
 
 ```powershell
-python -m venv .venv
+py -3.12 -m venv .venv
 .venv\Scripts\Activate.ps1
+python --version
 ```
+
+`py -3.12` เลือก Python 3.12 แม้เครื่องจะมีหลาย version บรรทัดสุดท้ายต้องขึ้น `Python 3.12.x`
 
 ถ้า PowerShell แจ้งว่ารัน script ไม่ได้ ให้รันคำสั่งนี้ครั้งเดียวแล้ว activate ใหม่:
 `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
@@ -52,11 +60,11 @@ python -m venv .venv
 **Windows (Command Prompt)**
 
 ```bat
-python -m venv .venv
+py -3.12 -m venv .venv
 .venv\Scripts\activate.bat
 ```
 
-เมื่อ activate สำเร็จ จะเห็น `(.venv)` นำหน้าบรรทัดคำสั่ง
+เมื่อ activate สำเร็จ จะเห็น `(.venv)` นำหน้าบรรทัดคำสั่ง ทุกครั้งที่เปิด Terminal ใหม่ต้อง activate ใหม่ แต่ไม่ต้องติดตั้งซ้ำ
 
 ### 2.3 ติดตั้ง library และ browser
 
@@ -79,7 +87,7 @@ playwright install
 ## 3. รัน test
 
 ```bash
-pytest
+python -m pytest
 ```
 
 รันกับเว็บจริงบน Chromium แบบ headless (ไม่เปิดหน้าต่าง) ใช้เวลาประมาณ 40 วินาที
@@ -176,8 +184,13 @@ todomvc-automation/
 
 ## 8. แก้ปัญหาที่พบบ่อย
 
+คำสั่งในตารางข้างบนใช้ `pytest` สั้นๆ ได้เมื่อ activate virtual environment แล้ว ถ้า Terminal หาคำสั่งไม่เจอ ให้ใช้ `python -m pytest` แทน
+
 | อาการ | วิธีแก้ |
 |---|---|
+| `No matching distribution found for playwright==1.63.0` | Python ต่ำกว่า 3.10 ติดตั้ง Python 3.12 แล้วสร้าง venv ใหม่ ดูข้อ 1 และ 2.2 |
+| `pytest : The term 'pytest' is not recognized` | ยังไม่ได้ activate virtual environment (ดูข้อ 2.2) หรือใช้ `python -m pytest` แทน |
+| `running scripts is disabled on this system` | รัน `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` ครั้งเดียว แล้ว activate ใหม่ |
 | `playwright: command not found` | ยังไม่ได้ activate virtual environment ดูข้อ 2.2 |
 | `Executable doesn't exist ... ms-playwright` | ยังไม่ได้ติดตั้ง browser รัน `playwright install` |
 | `ModuleNotFoundError: No module named 'pages'` | ต้องรัน `pytest` จากโฟลเดอร์ `todomvc-automation` |
